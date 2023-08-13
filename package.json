@@ -53,5 +53,8 @@
     "echo:ancestor": "echo ${ANCESTOR_REF:-$(git merge-base origin/master HEAD)}",
     "build": "pnpm -r build",
     "prepare": "husky install"
+  },
+  "dependencies": {
+    "@tinyhttp/router": "workspace:^"
   }
 }

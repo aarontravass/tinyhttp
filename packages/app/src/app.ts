@@ -5,7 +5,7 @@ import type { Request } from './request.js'
 import type { Response } from './response.js'
 import type { ErrorHandler } from './onError.js'
 import { onErrorHandler } from './onError.js'
-import { Middleware, Handler, NextFunction, Router, UseMethodParams, pushMiddleware } from '@tinyhttp/router'
+import { Middleware, Handler, NextFunction, Router, pushMiddleware } from '@tinyhttp/router'
 import { extendMiddleware } from './extend.js'
 import { parse as rg } from 'regexparam'
 import { getPathname } from '@tinyhttp/req'
@@ -21,6 +21,7 @@ const mount = (fn: App | Handler) => (fn instanceof App ? fn.attach : fn)
 const applyHandler =
   <Req, Res>(h: Handler<Req, Res>) =>
   async (req: Req, res: Res, next?: NextFunction) => {
+    console.log(h)
     try {
       if (h[Symbol.toStringTag] === 'AsyncFunction') {
         await h(req, res, next)
@@ -188,20 +189,20 @@ export class App<
 
     return this
   }
-  use(...args: UseMethodParams<Req, Res, App>): this {
+  use(...args: any): this {
     const base = args[0]
-
-    const fns = args.slice(1).flat()
+    let handlers: any[] = args.slice(1).flat()
+    const middlewares: Middleware[] = []
 
     let pathArray = []
     if (typeof base === 'function' || base instanceof App) {
-      fns.unshift(base)
+      handlers.unshift(base)
     } else {
       // if base is not an array of paths, then convert it to an array.
       let basePaths = []
       if (Array.isArray(base)) basePaths = [...base]
-      else if (typeof base === 'string') basePaths = [base]
-
+      else basePaths = [base]
+      // filter all paths and handlers
       basePaths = basePaths.filter((element) => {
         if (typeof element === 'string') {
           pathArray.push(element)
@@ -209,14 +210,21 @@ export class App<
         }
         return true
       })
-      fns.unshift(...basePaths)
+      handlers.unshift(...basePaths)
     }
+    // filter middleware, routers and handler fns
+    handlers = handlers.filter((handler) => {
+      if (typeof handler === 'function' || handler instanceof App) return true
+      if (handler instanceof Router) middlewares.push(...handler.middleware)
+      else middlewares.push(handler)
+      return false
+    })
     pathArray = pathArray.length ? pathArray : ['/']
 
     const mountpath = pathArray.join(', ')
     let regex: { keys: string[]; pattern: RegExp }
-
-    for (const fn of fns) {
+    console.log(handlers)
+    for (const fn of handlers) {
       if (fn instanceof App) {
         pathArray.forEach((path) => {
           regex = rg(path, true)
@@ -226,30 +234,39 @@ export class App<
         })
       }
     }
+
     pathArray.forEach((path) => {
       const handlerPaths = []
       const handlerFunctions = []
       const handlerPathBase = path === '/' ? '' : lead(path)
-      for (const fn of fns) {
-        if (fn instanceof App && fn.middleware?.length) {
-          for (const mw of fn.middleware) {
-            handlerPaths.push(handlerPathBase + lead(mw.path))
+      if (handlers.length) {
+        for (const fn of handlers) {
+          if (fn instanceof App && fn.middleware?.length) {
+            for (const mw of fn.middleware) {
+              handlerPaths.push(handlerPathBase + lead(mw.path))
+              handlerFunctions.push(fn)
+            }
+          } else {
+            handlerPaths.push('')
             handlerFunctions.push(fn)
           }
-        } else {
-          handlerPaths.push('')
-          handlerFunctions.push(fn)
         }
+        pushMiddleware(this.middleware)({
+          path,
+          regex,
+          type: 'mw',
+          handler: mount(handlerFunctions[0] as Handler),
+          handlers: handlerFunctions.slice(1).map(mount),
+          fullPaths: handlerPaths
+        })
       }
-      pushMiddleware(this.middleware)({
-        path,
-        regex,
-        type: 'mw',
-        handler: mount(handlerFunctions[0] as Handler),
-        handlers: handlerFunctions.slice(1).map(mount),
-        fullPaths: handlerPaths
-      })
+      console.log(middlewares)
+      // push all middleware. all middleware paths are prepended with base path
+      middlewares.forEach((middleware) =>
+        pushMiddleware(this.middleware)({ ...middleware, fullPaths: [handlerPathBase + lead(middleware.path)] })
+      )
     })
+
     return this
   }
   /**

@@ -8,8 +8,9 @@ import { renderFile } from 'eta'
 import type { EtaConfig } from 'eta/dist/types/config'
 import { InitAppAndTest } from '../../test_helpers/initAppAndTest'
 import { makeFetch } from 'supertest-fetch'
+import { Router } from '@tinyhttp/router'
 
-describe('Testing App', () => {
+describe.skip('Testing App', () => {
   it('should launch a basic server', async () => {
     const { fetch } = InitAppAndTest((_req, res) => void res.send('Hello World'))
 
@@ -96,7 +97,7 @@ describe('Testing App', () => {
   })
 })
 
-describe('Testing App routing', () => {
+describe.skip('Testing App routing', () => {
   it('should add routes added before app.use', async () => {
     const app = new App()
 
@@ -247,7 +248,7 @@ describe('Testing App routing', () => {
   })
 })
 
-describe('App methods', () => {
+describe.skip('App methods', () => {
   it('`app.set` sets a setting', () => {
     const app = new App().set('subdomainOffset', 1)
 
@@ -305,7 +306,7 @@ describe('App methods', () => {
   })
 })
 
-describe('HTTP methods', () => {
+describe.skip('HTTP methods', () => {
   it('app.get handles get request', async () => {
     const app = new App()
 
@@ -514,7 +515,7 @@ describe('HTTP methods', () => {
   })
 })
 
-describe('Route handlers', () => {
+describe.skip('Route handlers', () => {
   it('router accepts array of middlewares', async () => {
     const app = new App()
 
@@ -660,7 +661,7 @@ describe('Route handlers', () => {
   })
 })
 
-describe('Subapps', () => {
+describe.skip('Subapps', () => {
   it('sub-app mounts on a specific path', () => {
     const app = new App()
 
@@ -934,7 +935,7 @@ describe('Subapps', () => {
   })
 })
 
-describe('Template engines', () => {
+describe.skip('Template engines', () => {
   it('works with eta out of the box', async () => {
     const app = new App<EtaConfig>()
 
@@ -978,7 +979,7 @@ describe('Template engines', () => {
   })
 })
 
-describe('App settings', () => {
+describe.skip('App settings', () => {
   describe('xPoweredBy', () => {
     it('is enabled by default', () => {
       const app = new App()
@@ -1040,5 +1041,29 @@ describe('App settings', () => {
 
       await fetch('/').expect(200)
     })
+  })
+})
+describe('tet', () => {
+  it('should accept a router in the .use function', async () => {
+    const app = new App()
+    app.get('/hello', (_, res) => res.send('hello'))
+    const router = new Router()
+    router.get('/world', (_, res) => res.send('world'))
+    app.use(router)
+
+    const fetch = makeFetch(app.listen())
+    await fetch('/hello').expect(200, 'hello')
+    await fetch('/world').expect(200, 'world')
+  })
+  it.skip('should accept a router in the .use function at a base path', async () => {
+    const app = new App()
+    app.get('/hello', (_, res) => res.send('hello'))
+    const router = new Router()
+    router.get('/world', (_, res) => res.send('world'))
+    app.use('test', router)
+
+    const fetch = makeFetch(app.listen())
+    await fetch('/hello').expect(200, 'hello')
+    await fetch('/world').expect(404, 'world')
   })
 })

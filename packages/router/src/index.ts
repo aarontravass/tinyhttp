@@ -62,7 +62,7 @@ type RegexParams = {
 
 type RIM<Req, Res, App> = (...args: RouterMethodParams<Req, Res>) => App
 
-export interface Middleware<Req = any, Res = any> {
+export class Middleware<Req = any, Res = any> {
   method?: Method
   handler: Handler<Req, Res>
   path?: string
@@ -93,6 +93,8 @@ type RouterMethodParams<Req = any, Res = any> = Parameters<RouterMethod<Req, Res
 
 export type UseMethod<Req = any, Res = any, App extends Router = any> = (
   path: RouterPathOrHandler<Req, Res> | App,
+  router?: Router,
+  middleware?: Middleware,
   handler?: RouterHandler<Req, Res> | App,
   ...handlers: (RouterHandler<Req, Res> | App)[]
 ) => any
