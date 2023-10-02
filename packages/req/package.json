@@ -1,6 +1,6 @@
 {
   "name": "@tinyhttp/req",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "type": "module",
   "description": "request extensions for tinyhttp",
   "homepage": "https://tinyhttp.v1rtl.site",
@@ -33,7 +33,6 @@
     "@tinyhttp/accepts": "workspace:*",
     "@tinyhttp/type-is": "workspace:*",
     "@tinyhttp/url": "workspace:*",
-    "es-fresh": "^0.0.11",
     "header-range-parser": "^1.1.3"
   }
 }

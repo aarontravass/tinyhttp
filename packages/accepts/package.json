@@ -1,7 +1,7 @@
 {
   "name": "@tinyhttp/accepts",
   "description": "accepts rewrite in TypeScript",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "license": "MIT",
   "homepage": "https://tinyhttp.v1rtl.site",
   "funding": {
@@ -26,7 +26,7 @@
     "@types/negotiator": "^0.6.1"
   },
   "dependencies": {
-    "es-mime-types": "^0.1.4",
+    "mime": "4.0.0-beta.1",
     "negotiator": "^0.6.3"
   },
   "scripts": {
