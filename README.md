@@ -12,10 +12,6 @@ Status][gh-actions-img]][github-actions]
 </div>
 <br /><br />
 
-> I'm building [Flash](https://flash-dev.vercel.app) - a service to deploy websites and apps on the new decentralized stack.
->
-> If you'd like to try or collab, [dm](https://t.me/v_1rtl) or [email](mailto:yo@v1rtl.site)
-
 _**tinyhttp**_ is a modern [Express](https://expressjs.com/)-like web framework
 written in TypeScript and compiled to native ESM, that uses a bare minimum
 amount of dependencies trying to avoid legacy hell.
@@ -37,7 +33,7 @@ middleware search.
 
 ## Install
 
-[Node.js 12.20+](https://node.green/#ES2019) is required.
+[Node.js 14.21.3+](https://node.green/#ES2022) is required.
 
 ```sh
 pnpm i @tinyhttp/app

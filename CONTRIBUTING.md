@@ -62,12 +62,12 @@ Here's a small list of requirements for your PR:
 - it should build without errors and warnings (except edge cases)
 - it should have been tested
 - PR must have a clear description of what it does, which part of the repo it affects
-- if PR is adding a new middleware, please contact [talentlessguy](https://t.me/talentless_guy) instead. We'll create a new repo in this org for you.
+- if PR is adding a new middleware, please contact [v_1rtl](https://t.me/v_1rtl) instead. We'll create a new repo in this org for you.
 
 ### Adding new middleware
 
 - Create a new repository from official template
-- Open an issue with "new middleware" label or contact [talentlessguy](https://t.me/talentless_guy)
+- Open an issue with "new middleware" label or contact [v_1rtl](https://t.me/v_1rtl)
 
 ### Adding new non-middleware module
 
@@ -100,4 +100,4 @@ In most other cases, additional steps aren't required. Install, write, test, lin
 
 If everything from the list is done right, feel free to submit a PR! I will look into it asap.
 
-If some further assistance before making a PR is needed, ping me on [telegram](https://t.me/talentless_guy) or [twitter](https://twitter.com/v1rtl).
+If some further assistance before making a PR is needed, ping me on [telegram](https://t.me/v_1rtl) or [twitter](https://twitter.com/v_1rtl).
