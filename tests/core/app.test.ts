@@ -4,12 +4,10 @@ import http from 'node:http'
 import { readFile } from 'node:fs/promises'
 import { App } from '../../packages/app/src/index'
 import { renderFile } from 'eta'
-import type { PartialConfig } from 'eta/dist/types/config'
 import { InitAppAndTest } from '../../test_helpers/initAppAndTest'
 import { makeFetch } from 'supertest-fetch'
 import { renderFile as ejsRenderFile } from 'ejs'
 import { View } from '../../packages/app/src/view'
-import path from 'node:path/posix'
 
 describe('Testing App', () => {
   it('should launch a basic server', async () => {
@@ -928,6 +926,14 @@ describe('Subapps', () => {
     const fetch = makeFetch(server)
     await fetch('/%').expect(400, 'Bad Request')
   })
+  it('Should throw an error when url regex throws an error', async () => {
+    global.decodeURIComponent = (...args) => {
+      throw new Error('an error was throw here')
+    }
+    const app = new App()
+    app.get('/:id', (_, res) => res.send('hello'))
+    await makeFetch(app.listen())('/123').expect(500)
+  })
   it('handles errors by parent when no onError specified', async () => {
     const app = new App({
       onError: (err, req, res) => res.status(500).end(`Ouch, ${err} hurt me on ${req.path} page.`)
@@ -1009,6 +1015,19 @@ describe('Template engines', () => {
         expect(str).toEqual('Hello from v1rtl')
       })
     })
+    it('should expose app._locals', () => {
+      const app = new App({
+        settings: {
+          views: `${process.cwd()}/tests/fixtures/views`
+        }
+      })
+      app.engine('eta', renderFile)
+
+      app.render('index.eta', {}, { _locals: { name: 'world' } }, (err, str) => {
+        if (err) throw err
+        expect(str).toEqual('Hello from world')
+      })
+    })
     it('should support index files', () => {
       const app = new App({
         settings: {
@@ -1026,19 +1045,22 @@ describe('Template engines', () => {
     })
     describe('errors', () => {
       it('should catch errors', () => {
+        expect.assertions(1)
         const app = new App({
           settings: {
             views: `${process.cwd()}/tests/fixtures`
           }
         })
 
-        class TestView {
+        class ErrorTestView {
+          path = 'something'
+          constructor(...args) {}
           render() {
             throw new Error('oops')
           }
         }
 
-        app.set('view', TestView as unknown as typeof View)
+        app.set('view', ErrorTestView as unknown as typeof View)
 
         app.render('nothing', {}, {}, (err) => {
           expect((err as Error).message, 'err!')
@@ -1195,26 +1217,8 @@ describe('Template engines', () => {
       })
     })
   })
-  it.skip('can render without options passed', async () => {
-    const original = process.cwd()
-    const app = new App({ settings: { xPoweredBy: true } })
-    process.cwd = vi.fn(() => {
-      return path.resolve(original + '/tests/fixtures')
-    })
-    app.engine('ejs', ejsRenderFile)
 
-    app.use((_, res) => {
-      res.render('index', { name: 'ejs' })
-    })
-
-    const server = app.listen()
-
-    const fetch = makeFetch(server)
-
-    await fetch('/').expectBody('Hello from ejs')
-    vi.unstubAllGlobals()
-  })
-  it.skip('can render without options and throws error if template renderer throws error', async () => {
+  it('can render without options and throws error if template renderer throws error', async () => {
     const app = new App()
     app.engine('ejs', ejsRenderFile)
 
@@ -1227,6 +1231,17 @@ describe('Template engines', () => {
     } catch (err) {
       expect((err as Error).message).toBe('Could not find matching close tag for "<%=".')
     }
+  })
+  it('uses the default engine to render', () => {
+    const app = new App()
+    app.set('view engine', '.eta')
+    app.engine('eta', renderFile)
+    app.locals.name = 'v1rtl'
+
+    app.render(`${process.cwd()}/tests/fixtures/views/index`, {}, {}, (err, str) => {
+      if (err) throw err
+      expect(str).toEqual('Hello from v1rtl')
+    })
   })
 })
 
